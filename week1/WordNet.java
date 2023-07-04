@@ -14,6 +14,8 @@ public class WordNet {
     private final Digraph graph;
 
     // constructor takes the name of the two input files
+    //
+    // TODO: Need to check for cycles?
     public WordNet(String synsets, String hypernyms) {
         // TODO: Throw execption if the input to the constructor does not
         // correspond to a rooted DAG.  Now how we gonna do that?
@@ -23,7 +25,7 @@ public class WordNet {
 
         if (synsets == null)
             throw new IllegalArgumentException("Hypernyms must be non-null");
-
+        
         In in = new In(synsets);
 
         int id = 0;
@@ -54,9 +56,34 @@ public class WordNet {
                 graph.addEdge(synsetId, Integer.parseInt(fields[i]));
             }
         }
+
+        checkRooted();
     }
 
-    void installWord(String word, int id) {
+    // Check there is exactly one vertex with only incoming edges.  If there are
+    // two, the DAG is not rooted.
+    private void checkRooted() {
+        int first = -1;
+        int second = -1;
+        
+        for (int i = 0; i < graph.V(); i++) {
+            if (graph.outdegree(i) == 0)
+                if (first == -1)
+                    first = i;
+                else {
+                    second = i;
+                    break;
+                }
+        }
+
+        if (first != -1 && second != -1)
+            throw new IllegalArgumentException(
+                String.format("Graph is not rooted.  %d and %d are both roots.",
+                              first,
+                              second));
+    }
+
+    private void installWord(String word, int id) {
         ArrayList<Integer> values = nouns.get(word);
 
         if (values == null) {
