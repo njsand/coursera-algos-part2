@@ -1,6 +1,6 @@
-SOURCES=WordNet.java
+SOURCES=WordNet.java SAP.java
 
-ZIP_SOURCES=WordNet.java
+ZIP_SOURCES=WordNet.java SAP.java
 
 ZIPFILE=wordnet.zip
 

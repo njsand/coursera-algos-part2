@@ -7,11 +7,22 @@ import edu.princeton.cs.algs4.In;
 
 public class WordNet {
 
-    Map<String, ArrayList<Integer>> nouns = new TreeMap<>();
-    Digraph graph;
+    // Maps words to the IDs of the synsets they belong to (and thus the
+    // vertices of those synsets in the graph.)  A noun can belong to multiple
+    // synsets.
+    private final Map<String, ArrayList<Integer>> nouns = new TreeMap<>();
+    private final Digraph graph;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
+        // TODO: Throw execption if the input to the constructor does not
+        // correspond to a rooted DAG.  Now how we gonna do that?
+        
+        if (synsets == null)
+            throw new IllegalArgumentException("Synsets must be non-null");
+
+        if (synsets == null)
+            throw new IllegalArgumentException("Hypernyms must be non-null");
 
         In in = new In(synsets);
 
@@ -63,18 +74,32 @@ public class WordNet {
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
+        if (word == null)
+            throw new IllegalArgumentException("Word must be non-null.");
+        
         return nouns.get(word) != null;
     }
 
     // distance between nounA and nounB (defined below)
     public int distance(String nounA, String nounB) {
+        validNoun("NounA", nounA);
+        validNoun("NounB", nounB);
+
         return 0;
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
+        validNoun("NounA", nounA);
+        validNoun("NounB", nounB);
+        
         return null;
+    }
+
+    private void validNoun(String label, String noun) {
+        if (noun == null || !isNoun(noun))
+            throw new IllegalArgumentException(label + " must be non-null and exist in the input");
     }
 
     // do unit testing of this class
@@ -84,6 +109,11 @@ public class WordNet {
         String[] words = {"a", "b", "z"};
         for (String w: words) {
             System.out.println(String.format("net.isNoun(%s): %b", w, net.isNoun(w)));
+        }
+
+        System.out.println("net.nouns():");
+        for (String n: net.nouns()) {
+            System.out.println(n);
         }
     }
 }
