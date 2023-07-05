@@ -60,27 +60,22 @@ public class WordNet {
         checkRooted();
     }
 
-    // Check there is exactly one vertex with only incoming edges.  If there are
-    // two, the DAG is not rooted.
+    // Check there is exactly one vertex with zero outgoing edges.  If there are
+    // two or more, the DAG is not rooted.
     private void checkRooted() {
         int first = -1;
-        int second = -1;
-        
+
         for (int i = 0; i < graph.V(); i++) {
             if (graph.outdegree(i) == 0)
                 if (first == -1)
                     first = i;
                 else {
-                    second = i;
-                    break;
+                    throw new IllegalArgumentException(
+                        String.format("Graph is not rooted.  %d and %d are both roots.",
+                                      first,
+                                      i));
                 }
         }
-
-        if (first != -1 && second != -1)
-            throw new IllegalArgumentException(
-                String.format("Graph is not rooted.  %d and %d are both roots.",
-                              first,
-                              second));
     }
 
     private void installWord(String word, int id) {
