@@ -17,19 +17,14 @@ public class WordNet {
     //
     // TODO: Check for cycles?
     public WordNet(String synsets, String hypernyms) {
-        // TODO: Throw execption if the input to the constructor does not
-        // correspond to a rooted DAG.  Now how we gonna do that?
-        
         if (synsets == null)
             throw new IllegalArgumentException("Synsets must be non-null");
 
-        if (synsets == null)
+        if (hypernyms == null)
             throw new IllegalArgumentException("Hypernyms must be non-null");
         
         graph = new Digraph(readSynsets(synsets));
-
         readHypernyms(hypernyms);
-        
         checkRooted();
     }
 
@@ -56,7 +51,7 @@ public class WordNet {
         input.close();
 
         // We rely on the synset ids in the file being correct here, but that's
-        // part of the contract.
+        // part of the contract of the input file.
         return id + 1;
     }
 
@@ -126,6 +121,7 @@ public class WordNet {
         validNoun("NounA", nounA);
         validNoun("NounB", nounB);
 
+        // TODO
         return 0;
     }
 
@@ -134,7 +130,8 @@ public class WordNet {
     public String sap(String nounA, String nounB) {
         validNoun("NounA", nounA);
         validNoun("NounB", nounB);
-        
+
+        // TODO
         return null;
     }
 
