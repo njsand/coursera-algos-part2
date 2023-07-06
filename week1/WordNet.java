@@ -15,7 +15,7 @@ public class WordNet {
 
     // constructor takes the name of the two input files
     //
-    // TODO: Need to check for cycles?
+    // TODO: Check for cycles?
     public WordNet(String synsets, String hypernyms) {
         // TODO: Throw execption if the input to the constructor does not
         // correspond to a rooted DAG.  Now how we gonna do that?
@@ -26,12 +26,23 @@ public class WordNet {
         if (synsets == null)
             throw new IllegalArgumentException("Hypernyms must be non-null");
         
-        In in = new In(synsets);
+        graph = new Digraph(readSynsets(synsets));
+
+        readHypernyms(hypernyms);
+        
+        checkRooted();
+    }
+
+    // Read the synsets file and add words to noun map.  First field is the id,
+    // second field the nouns, and the third field (the gloss) we ignore.
+    // Returns the number of synsets read.
+    private int readSynsets(String filename) {
+        In input = new In(filename);
 
         int id = 0;
 
-        while (!in.isEmpty()) {
-            String line = in.readLine();
+        while (!input.isEmpty()) {
+            String line = input.readLine();
 
             String[] fields = line.split(",");
             id = Integer.parseInt(fields[0]);
@@ -42,13 +53,21 @@ public class WordNet {
             }
         }
 
-        graph = new Digraph(id + 1);
+        input.close();
 
-        in = new In(hypernyms);
+        // We rely on the synset ids in the file being correct here, but that's
+        // part of the contract.
+        return id + 1;
+    }
 
-        while (!in.isEmpty()) {
-            String line = in.readLine();
-            String[] fields = line.split(",");
+    // Read the hypernyms file and add edges to the graph.
+    // First field is the synset id; all following fields are its hypernym
+    // synset ids.
+    private void readHypernyms(String filename) {
+        In input = new In(filename);
+
+        while (!input.isEmpty()) {
+            String[] fields = input.readLine().split(",");
 
             int synsetId = Integer.parseInt(fields[0]);
 
@@ -57,9 +76,9 @@ public class WordNet {
             }
         }
 
-        checkRooted();
+        input.close();
     }
-
+    
     // Check there is exactly one vertex with zero outgoing edges.  If there are
     // two or more, the DAG is not rooted.
     private void checkRooted() {
@@ -78,12 +97,12 @@ public class WordNet {
         }
     }
 
+    // Add an entry into the noun -> vertex id map.
     private void installWord(String word, int id) {
         ArrayList<Integer> values = nouns.get(word);
 
-        if (values == null) {
-            values = new ArrayList<Integer>();
-        }
+        if (values == null)
+            values = new ArrayList<>();
         
         values.add(id);
         nouns.put(word, values);
