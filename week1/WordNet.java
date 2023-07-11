@@ -28,8 +28,10 @@ public class WordNet {
         checkRooted();
     }
 
-    // Read the synsets file and add words to noun map.  First field is the id,
-    // second field the nouns, and the third field (the gloss) we ignore.
+    // Read the synsets file and add words to noun map.
+    //
+    // The first field in the file is the synset id, the second field the list
+    // of nouns (space separated), and the third field (the gloss) we ignore.
     // Returns the number of synsets read.
     private int readSynsets(String filename) {
         In input = new In(filename);
@@ -56,8 +58,9 @@ public class WordNet {
     }
 
     // Read the hypernyms file and add edges to the graph.
-    // First field is the synset id; all following fields are its hypernym
-    // synset ids.
+    // 
+    // The first field is the synset id; all the following fields are its
+    // hypernym synset ids.
     private void readHypernyms(String filename) {
         In input = new In(filename);
 
