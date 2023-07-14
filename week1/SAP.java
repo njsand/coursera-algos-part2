@@ -7,13 +7,23 @@ import edu.princeton.cs.algs4.Queue;
 import java.util.Arrays;
 
 /**
- * SAP (Shortest Ancestral Path).
+ * SAP (Shortest Ancestral Path) of two nodes in a DAG.
+ *
+ * The algorithm here is to run two independent breadth-first-searches, one step at a time until they collide.  The
+ * first search starts at vertex {@code v} and the second at vertex {@code w}.
+
+ * When either search tries to visit a node that the other search has already visited, the node the searches collide on
+ * is the shortest common ancestor.
  */ 
 public class SAP {
 
     private Digraph g;
     private int[] vmark;
     private int[] wmark;
+
+    // Queues that guide the BFS.  We run two 
+    private Queue<Step> vnodes;
+    private Queue<Step> wnodes;
     
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
@@ -27,16 +37,76 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        Step result = bfs(v, w);
+        Step result = initQueues(Arrays.asList(v), Arrays.asList(w));
         
-        return result != null ? result.length : -1;
+        if (result == null)
+            result = bfs();
+
+        return result.length;
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        Step result = bfs(v, w);
-        
-        return result != null ? result.vertex : -1;
+        Step result = initQueues(Arrays.asList(v), Arrays.asList(w));
+
+        if (result == null)
+            result = bfs();
+
+        return result.vertex;
+    }
+
+    // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
+    public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        Step result = initQueues(v, w);
+
+        if (result == null)
+            result = bfs();
+
+        return result.length;
+    }
+
+    // a common ancestor that participates in shortest ancestral path; -1 if no such path
+    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        Step result = initQueues(v, w);
+
+        if (result == null)
+            result = bfs();
+
+        return result.vertex;
+    }
+
+    private void initSearch() {
+        // -1 in the mark arrays means "not visited yet".  A non-negative number
+        // means it was visited with that many steps.
+        Arrays.fill(vmark, -1);
+        Arrays.fill(wmark, -1);
+
+        vnodes = new Queue<>();
+        wnodes = new Queue<>();
+    }
+
+    private Step initQueues(Iterable<Integer> v, Iterable<Integer> w) {
+        initSearch();
+
+        Step result = null;
+
+        for (int vertex: v) {
+            vmark[vertex] = 0;
+            vnodes.enqueue(new Step(vertex, 0));
+        }
+
+        for (int vertex: w) {
+            wmark[vertex] = 0;
+            wnodes.enqueue(new Step(vertex, 0));
+
+            // This checks for overlap in the starting sets.  If so, we've already found our ancestor.
+            if (vmark[vertex] != -1) {
+                result = new Step(vertex, 0);
+                break;
+            }
+        }
+
+        return result;
     }
 
     private static class Step {
@@ -48,52 +118,31 @@ public class SAP {
         }
     }
 
-    // The algorithm here is to run two independent breadth-first-searches, one
-    // step at a time until they collide: one search tries to visit a node that
-    // the other search has already visited.
-    //
-    // The node they collide on is the shortest common ancestor.
-    private Step bfs(int v, int w) {
-        // -1 in the mark arrays means "not visited yet".  A non-negative number
-        // means it was visited with that many steps.
-        Arrays.fill(vmark, -1);
-        Arrays.fill(wmark, -1);
-
-        Queue<Step> vnodes = new Queue<>();
-        Queue<Step> wnodes = new Queue<>();
-
-        if (v == w)
-            return new Step(v, 0);
-
-        vmark[v] = 0;
-        vnodes.enqueue(new Step(v, 0));
-
-        wmark[w] = 0;
-        wnodes.enqueue(new Step(w, 0));
-
+    private Step bfs() {
         while (!vnodes.isEmpty() || !wnodes.isEmpty()) {
-            Step result = step(vnodes, vmark, wmark);
+            Step result = doSearchStep(vnodes, vmark, wmark);
             Step result2 = null;
 
             if (result == null)
-                result2 = step(wnodes, wmark, vmark);
+                result2 = doSearchStep(wnodes, wmark, vmark);
 
             Step found = result != null ? result : result2;
             if (found != null) {
                 int ancestor = found.vertex;
-                
+
+                // Total path length is the sum of each search's path.
                 return new Step(ancestor, vmark[ancestor] + wmark[ancestor]);
             }
         }
 
-        return null;
+        return new Step(-1, -1); // No ancestor found.
     }
 
-    // Run one step of the BFS - take a node of the queue and enqueue its
-    // adjacent vertices if they're not searched yet.
+    // Run one step of the BFS - take a node off the queue and enqueue its
+    // adjacent vertices if they're not marked.
     //
     // Return a {@code Step} if the ancestor is found.
-    private Step step(Queue<Step> s, int[] mark, int[] othermark) {
+    private Step doSearchStep(Queue<Step> s, int[] mark, int[] othermark) {
         if (!s.isEmpty()) {
             Step step = s.dequeue();
             
@@ -112,18 +161,6 @@ public class SAP {
         return null;
     }
 
-    // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
-    public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        // TODO
-        return 0;
-    }
-
-    // a common ancestor that participates in shortest ancestral path; -1 if no such path
-    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        // TODO
-        return 0;
-    }
-
     public static void main(String[] args) {
         In in = new In(args[0]);
         Digraph G = new Digraph(in);
@@ -136,6 +173,5 @@ public class SAP {
             StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
         }
     }
-
 }
 
