@@ -1,6 +1,6 @@
-SOURCES=WordNet.java SAP.java
+SOURCES=WordNet.java SAP.java Outcast.java
 
-ZIP_SOURCES=WordNet.java SAP.java
+ZIP_SOURCES=WordNet.java SAP.java Outcast.java
 
 ZIPFILE=wordnet.zip
 

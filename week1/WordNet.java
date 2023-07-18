@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 
+// https://coursera.cs.princeton.edu/algs4/assignments/wordnet/specification.php
 public class WordNet {
 
     // Maps words to the IDs of the synsets they belong to (and thus the
@@ -28,7 +29,7 @@ public class WordNet {
         checkRooted();
     }
 
-    // Read the synsets file and add words to noun map.
+    // Read the synsets file and add words to the noun map.
     //
     // The first field in the file is the synset id, the second field the list
     // of nouns (space separated), and the third field (the gloss) we ignore.
