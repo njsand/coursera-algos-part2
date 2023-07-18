@@ -37,56 +37,39 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        Step result = initQueues(Arrays.asList(v), Arrays.asList(w));
-        
-        if (result == null)
-            result = bfs();
-
-        return result.length;
+        return bfs(Arrays.asList(v), Arrays.asList(w)).length;
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        Step result = initQueues(Arrays.asList(v), Arrays.asList(w));
-
-        if (result == null)
-            result = bfs();
-
-        return result.vertex;
+        return bfs(Arrays.asList(v), Arrays.asList(w)).vertex;
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        Step result = initQueues(v, w);
-
-        if (result == null)
-            result = bfs();
-
-        return result.length;
+        return bfs(v, w).length;
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        Step result = initQueues(v, w);
-
-        if (result == null)
-            result = bfs();
-
-        return result.vertex;
+        return bfs(v, w).vertex;
+    }
+    
+    private static class Step {
+        int vertex, length;
+        
+        Step(int vertex, int length) {
+            this.vertex = vertex;
+            this.length = length;
+        }
     }
 
-    private void initSearch() {
-        // -1 in the mark arrays means "not visited yet".  A non-negative number
-        // means it was visited with that many steps.
+    private Step initQueues(Iterable<Integer> v, Iterable<Integer> w) {
         Arrays.fill(vmark, -1);
         Arrays.fill(wmark, -1);
 
         vnodes = new Queue<>();
         wnodes = new Queue<>();
-    }
-
-    private Step initQueues(Iterable<Integer> v, Iterable<Integer> w) {
-        initSearch();
 
         Step result = null;
 
@@ -108,17 +91,13 @@ public class SAP {
 
         return result;
     }
+    
+    private Step bfs(Iterable<Integer> v, Iterable<Integer> w) {
+        Step init = initQueues(v, w);
 
-    private static class Step {
-        int vertex, length;
+        if (init != null)
+            return init;
         
-        Step(int vertex, int length) {
-            this.vertex = vertex;
-            this.length = length;
-        }
-    }
-
-    private Step bfs() {
         while (!vnodes.isEmpty() || !wnodes.isEmpty()) {
             Step result = doSearchStep(vnodes, vmark, wmark);
             Step result2 = null;
