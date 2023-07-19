@@ -5,6 +5,7 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Queue;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * SAP (Shortest Ancestral Path) of two nodes in a DAG.
@@ -17,14 +18,16 @@ import java.util.Arrays;
  */ 
 public class SAP {
 
-    private Digraph g;
-    private int[] vmark;
-    private int[] wmark;
+    private final Digraph g;
+    private final int[] vmark;
+    private final int[] wmark;
 
     // Queues that guide the BFS.  We run two 
     private Queue<Step> vnodes;
     private Queue<Step> wnodes;
-    
+
+    private Step shortest;
+
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
         if (G == null)
@@ -37,22 +40,26 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        return bfs(Arrays.asList(v), Arrays.asList(w)).length;
+        bfs(Collections.singletonList(v), Collections.singletonList(w));
+        return shortest.length == Integer.MAX_VALUE ? -1 : shortest.length;        
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        return bfs(Arrays.asList(v), Arrays.asList(w)).vertex;
+        bfs(Collections.singletonList(v), Collections.singletonList(w));
+        return shortest.vertex;
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        return bfs(v, w).length;
+        bfs(v, w);
+        return shortest.length == Integer.MAX_VALUE ? -1 : shortest.length;
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        return bfs(v, w).vertex;
+        bfs(v, w);
+        return shortest.vertex;
     }
     
     private static class Step {
@@ -74,14 +81,16 @@ public class SAP {
         vnodes = new Queue<>();
         wnodes = new Queue<>();
 
+        shortest = new Step(-1, Integer.MAX_VALUE);
+
         Step result = null;
 
-        for (int vertex: v) {
+        for (Integer vertex: v) {
             markVertexSafe(vmark, vertex, 0);
             vnodes.enqueue(new Step(vertex, 0));
         }
 
-        for (int vertex: w) {
+        for (Integer vertex: w) {
             markVertexSafe(wmark, vertex, 0);
             wnodes.enqueue(new Step(vertex, 0));
 
@@ -95,62 +104,53 @@ public class SAP {
         return result;
     }
 
-    private void markVertexSafe(int[] marks, int v, int value) {
-        if (v < 0 || v >= marks.length)
+    private void markVertexSafe(int[] marks, Integer i, int value) {
+        if (i == null)
+            throw new IllegalArgumentException("Vertice must not be null");
+
+        if (i < 0 || i >= marks.length)
             throw new IllegalArgumentException("Vertice out of bounds.");
 
-        marks[v] = value;
+        marks[i] = value;
     }
     
-    private Step bfs(Iterable<Integer> v, Iterable<Integer> w) {
+    private void bfs(Iterable<Integer> v, Iterable<Integer> w) {
         Step init = initQueues(v, w);
 
-        if (init != null)
-            return init;
-        
-        int shortestVertex = -1;
-        int length = Integer.MAX_VALUE;
+        if (init != null) {
+            shortest = init;
+            return;
+        }
         
         while (!vnodes.isEmpty() || !wnodes.isEmpty()) {
-            Step result = doSearchStep(vnodes, vmark, wmark);
-            Step result2 = null;
-
-            if (result == null)
-                result2 = doSearchStep(wnodes, wmark, vmark);
-
-            Step found = result != null ? result : result2;
-            if (found != null) {
-                int ancestor = found.vertex;
-
-                // Total path length is the sum of each search's path.
-                return new Step(ancestor, vmark[ancestor] + wmark[ancestor]);
-            }
+            runSearchStep(vnodes, vmark, wmark);
+            runSearchStep(wnodes, wmark, vmark);
         }
-
-        return new Step(-1, -1); // No ancestor found.
     }
 
     // Run one step of the BFS - take a node off the queue and enqueue its
     // adjacent vertices if they're not marked.
     //
     // Return a {@code Step} if the ancestor is found.
-    private Step doSearchStep(Queue<Step> s, int[] mark, int[] othermark) {
-        if (!s.isEmpty()) {
-            Step step = s.dequeue();
+    private void runSearchStep(Queue<Step> s, int[] mark, int[] othermark) {
+        if (s.isEmpty())
+            return;
+
+        Step step = s.dequeue();
             
-            for (int adj : g.adj(step.vertex)) {
-                if (mark[adj] == -1) {
-                    mark[adj] = step.length+1;
-                    s.enqueue(new Step(adj, step.length+1));
-                }
+        for (int adj : g.adj(step.vertex)) {
+            if (mark[adj] == -1) {
+                mark[adj] = step.length+1;
+                s.enqueue(new Step(adj, step.length+1));
 
                 if (othermark[adj] != -1) {
-                    return new Step(adj, step.length+1);           // Ancestor found.
+                    int newLength = mark[adj] + othermark[adj];
+                    if (newLength < shortest.length) {
+                        shortest = new Step(adj, newLength);
+                    }
                 }
-            }            
-        }
-
-        return null;
+            }
+        }            
     }
 
     public static void main(String[] args) {
