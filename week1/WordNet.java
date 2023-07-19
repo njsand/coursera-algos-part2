@@ -7,6 +7,7 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.DirectedCycle;
 
 // https://coursera.cs.princeton.edu/algs4/assignments/wordnet/specification.php
 public class WordNet {
@@ -21,8 +22,6 @@ public class WordNet {
     private final SAP sap;
 
     // constructor takes the name of the two input files
-    //
-    // TODO: Check for cycles?
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null)
             throw new IllegalArgumentException("Synsets must be non-null");
@@ -33,6 +32,7 @@ public class WordNet {
         graph = new Digraph(readSynsets(synsets));
         readHypernyms(hypernyms);
         checkRooted();
+        checkAcyclic();
 
         sap = new SAP(graph);
     }
@@ -102,6 +102,13 @@ public class WordNet {
                                       i));
                 }
         }
+    }
+
+    private void checkAcyclic() {
+        DirectedCycle cycle = new DirectedCycle(graph);
+
+        if (cycle.hasCycle())
+            throw new IllegalArgumentException("Graph has a cycle.");
     }
 
     // Add an entry into the noun -> vertex id map.
