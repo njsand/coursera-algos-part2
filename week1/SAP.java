@@ -30,7 +30,7 @@ public class SAP {
         if (G == null)
             throw new IllegalArgumentException("Graph must be non-null");
 
-        g = G;
+        g = new Digraph(G);
         vmark = new int[g.V()];
         wmark = new int[g.V()];
     }
@@ -65,6 +65,9 @@ public class SAP {
     }
 
     private Step initQueues(Iterable<Integer> v, Iterable<Integer> w) {
+        if (v == null || w == null)
+            throw new IllegalArgumentException("Vertice set must not be null");
+
         Arrays.fill(vmark, -1);
         Arrays.fill(wmark, -1);
 
@@ -74,12 +77,12 @@ public class SAP {
         Step result = null;
 
         for (int vertex: v) {
-            vmark[vertex] = 0;
+            markVertexSafe(vmark, vertex, 0);
             vnodes.enqueue(new Step(vertex, 0));
         }
 
         for (int vertex: w) {
-            wmark[vertex] = 0;
+            markVertexSafe(wmark, vertex, 0);
             wnodes.enqueue(new Step(vertex, 0));
 
             // This checks for overlap in the starting sets.  If so, we've already found our ancestor.
@@ -91,12 +94,22 @@ public class SAP {
 
         return result;
     }
+
+    private void markVertexSafe(int[] marks, int v, int value) {
+        if (v < 0 || v >= marks.length)
+            throw new IllegalArgumentException("Vertice out of bounds.");
+
+        marks[v] = value;
+    }
     
     private Step bfs(Iterable<Integer> v, Iterable<Integer> w) {
         Step init = initQueues(v, w);
 
         if (init != null)
             return init;
+        
+        int shortestVertex = -1;
+        int length = Integer.MAX_VALUE;
         
         while (!vnodes.isEmpty() || !wnodes.isEmpty()) {
             Step result = doSearchStep(vnodes, vmark, wmark);

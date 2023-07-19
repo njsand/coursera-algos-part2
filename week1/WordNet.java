@@ -1,9 +1,12 @@
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.List;
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdIn;
 
 // https://coursera.cs.princeton.edu/algs4/assignments/wordnet/specification.php
 public class WordNet {
@@ -12,7 +15,10 @@ public class WordNet {
     // vertices of those synsets in the graph.)  A noun can belong to multiple
     // synsets.
     private final Map<String, ArrayList<Integer>> nouns = new TreeMap<>();
+    private final List<String> synsets = new ArrayList<>();
+
     private final Digraph graph;
+    private final SAP sap;
 
     // constructor takes the name of the two input files
     //
@@ -27,6 +33,8 @@ public class WordNet {
         graph = new Digraph(readSynsets(synsets));
         readHypernyms(hypernyms);
         checkRooted();
+
+        sap = new SAP(graph);
     }
 
     // Read the synsets file and add words to the noun map.
@@ -44,9 +52,9 @@ public class WordNet {
 
             String[] fields = line.split(",");
             id = Integer.parseInt(fields[0]);
-            String[] words = fields[1].split(" ");
 
-            for (String w: words) {
+            synsets.add(fields[1]);
+            for (String w: fields[1].split(" ")) {
                 installWord(w, id);
             }
         }
@@ -125,8 +133,10 @@ public class WordNet {
         validNoun("NounA", nounA);
         validNoun("NounB", nounB);
 
-        // TODO
-        return 0;
+        Iterable<Integer> aVerts = nouns.get(nounA);
+        Iterable<Integer> bVerts = nouns.get(nounB);
+
+        return sap.length(aVerts, bVerts);
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
@@ -135,8 +145,10 @@ public class WordNet {
         validNoun("NounA", nounA);
         validNoun("NounB", nounB);
 
-        // TODO
-        return null;
+        Iterable<Integer> aVerts = nouns.get(nounA);
+        Iterable<Integer> bVerts = nouns.get(nounB);
+
+        return synsets.get(sap.ancestor(aVerts, bVerts));
     }
 
     private void validNoun(String label, String noun) {
@@ -150,12 +162,15 @@ public class WordNet {
 
         String[] words = {"a", "b", "z"};
         for (String w: words) {
-            System.out.println(String.format("net.isNoun(%s): %b", w, net.isNoun(w)));
+            StdOut.printf("net.isNoun(%s): %b", w, net.isNoun(w));
         }
 
-        System.out.println("net.nouns():");
-        for (String n: net.nouns()) {
-            System.out.println(n);
+        while (!StdIn.isEmpty()) {
+            String v = StdIn.readString();
+            String w = StdIn.readString();
+            // int length   = sap.length(v, w);
+            // int ancestor = sap.ancestor(v, w);
+            StdOut.printf("%s\n", net.sap(v, w));
         }
     }
 }

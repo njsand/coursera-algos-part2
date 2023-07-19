@@ -3,14 +3,38 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class Outcast {
 
+    private WordNet net;
+
     // constructor takes a WordNet object
     public Outcast(WordNet wordnet) {
-        
+        net = wordnet;
     }
      
     // given an array of WordNet nouns, return an outcast
     public String outcast(String[] nouns) {
-        return null;
+        int max = sumDist(nouns[0], nouns);
+        String outcast = nouns[0];
+
+        for (int i = 1; i < nouns.length; i++) {
+            int dist = sumDist(nouns[i], nouns);
+
+            if (dist > max) {
+                max = dist;
+                outcast = nouns[i];
+            }
+        }
+
+        return outcast;
+    }
+
+    private int sumDist(String sample, String[] nouns) {
+        int sum = 0;
+        
+        for (String noun : nouns) {
+            sum += net.distance(sample, noun);
+        }
+
+        return sum;
     }
     
     public static void main(String[] args) {
