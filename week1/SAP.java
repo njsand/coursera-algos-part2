@@ -9,12 +9,6 @@ import java.util.Collections;
 
 /**
  * SAP (Shortest Ancestral Path) of two nodes in a DAG.
- *
- * The algorithm here is to run two independent breadth-first-searches, one step at a time until they collide.  The
- * first search starts at vertex {@code v} and the second at vertex {@code w}.
-
- * When either search tries to visit a node that the other search has already visited, the node the searches collide on
- * is the shortest common ancestor.
  */ 
 public class SAP {
 
@@ -130,8 +124,6 @@ public class SAP {
 
     // Run one step of the BFS - take a node off the queue and enqueue its
     // adjacent vertices if they're not marked.
-    //
-    // Return a {@code Step} if the ancestor is found.
     private void runSearchStep(Queue<Step> s, int[] mark, int[] othermark) {
         if (s.isEmpty())
             return;
