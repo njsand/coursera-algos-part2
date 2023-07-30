@@ -39,9 +39,10 @@ public class WordNet {
 
     // Read the synsets file and add words to the noun map.
     //
-    // The first field in the file is the synset id, the second field the list
-    // of nouns (space separated), and the third field (the gloss) we ignore.
-    // Returns the number of synsets read.
+    // The first field on each line is the synset id, the second field the list
+    // of nouns (separated by spaces), and the third field the gloss (which we
+    // ignore).
+    // Return the number of synsets read.
     private int readSynsets(String filename) {
         In input = new In(filename);
 
