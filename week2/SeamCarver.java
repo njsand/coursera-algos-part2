@@ -1,3 +1,5 @@
+import java.awt.Color;
+
 import edu.princeton.cs.algs4.Picture;
 
 public class SeamCarver {
@@ -26,9 +28,38 @@ public class SeamCarver {
 
    // energy of pixel at column x and row y
     public double energy(int x, int y) {
-        return 0;
+        if (isEdge(x, y))
+            return 1000;
+
+        Color left = picture.get(x-1, y);
+        Color right = picture.get(x+1, y);
+        
+        double xrGradient = (right.getRed() - left.getRed()) ^ 2;
+        double xgGradient = (right.getGreen() - left.getGreen()) ^ 2;
+        double xbGradient = (right.getBlue() - left.getBlue()) ^ 2;
+
+        Color above = picture.get(x, y-1);
+        Color below = picture.get(x, y+1);
+        
+        double yrGradient = (below.getRed() - above.getRed()) ^ 2;
+        double ygGradient = (below.getGreen() - above.getGreen()) ^ 2;
+        double ybGradient = (below.getBlue() - above.getBlue()) ^ 2;
+
+        return Math.pow(xrGradient + xgGradient + xbGradient +
+                        yrGradient + ygGradient + ybGradient,
+                        0.5);
     }
 
+    private boolean isEdge(int x, int y) {
+        if (x == 0 ||
+            x == width()-1 ||
+            y == 0 ||
+            y == height()-1)
+            return true;
+
+        return false;
+    }
+    
    // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
         return new int[]{};
