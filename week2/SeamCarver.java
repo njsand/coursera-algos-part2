@@ -65,11 +65,9 @@ public class SeamCarver {
                          ybDiff * ybDiff);
     }
 
-    private boolean isEdge(int x, int y) {
-        if (x == 0 ||
-            x == width()-1 ||
-            y == 0 ||
-            y == height()-1)
+    private boolean isEdge(int col, int row) {
+        if (col == 0 || col == width()-1 ||
+            row == 0 || row == height()-1)
             return true;
 
         return false;
@@ -77,6 +75,8 @@ public class SeamCarver {
     
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
+        // TODO
+        
         return new int[]{};
     }
 
@@ -94,27 +94,28 @@ public class SeamCarver {
         // (connected) pixel with the shortest path.
         for (int i = 1; i < height(); i++) {
             for (int j = 0; j < width(); j++) {
-                int prev = choosePath(prevDistTo, i, j);
+                int prev = choosePath(prevDistTo, j);
 
                 distTo[j] = prevDistTo[prev] + energies[i][j];
                 pathTo[i][j] = prev;
             }
 
-            // Swap.
+            // Swap 'em.
             double[] tmp = distTo;
             distTo = prevDistTo;
             prevDistTo = tmp;
             
         }
 
-        // Find the end of the path.  It's
+        // Find the pixel at the end of the seam (the one with the lowest
+        // overall path.)
         int pos = findMin(distTo);
 
         int[] path = new int[height()];
 
         path[path.length-1] = pos;
 
-        // Now construct the path, starting from the bottom.
+        // Now construct the rest of the path, starting from the row second from bottom.
         for (int i = height()-2; i >=0; i--) {
             path[i] = pos = pathTo[i+1][pos];
         }
@@ -122,7 +123,8 @@ public class SeamCarver {
         return path;
     }
 
-    int findMin(double []a) {
+    // Return the index of the smallest value in a.
+    private int findMin(double []a) {
         double min = a[0];
         int minPos = 0;
         
@@ -135,15 +137,15 @@ public class SeamCarver {
         return minPos;
     }
 
-    int choosePath(double[] prevDistTo, int i, int j) {
-        int aboveLeft = j == 0 ? j : j-1;
-        int above = j;
-        int aboveRight = j == width()-1 ? j : j+1;
+    private int choosePath(double[] prevDistTo, int j) {
+        int left = j == 0 ? j : j-1;
+        int middle = j;
+        int right = j == width()-1 ? j : j+1;
 
-        if (prevDistTo[aboveLeft] < prevDistTo[above])
-            return prevDistTo[aboveLeft] < prevDistTo[aboveRight] ? aboveLeft : aboveRight;
+        if (prevDistTo[left] < prevDistTo[middle])
+            return prevDistTo[left] < prevDistTo[right] ? left : right;
         else
-            return prevDistTo[above] < prevDistTo[aboveRight] ? above : aboveRight;
+            return prevDistTo[middle] < prevDistTo[right] ? middle : right;
     }
     
     // remove horizontal seam from current picture
