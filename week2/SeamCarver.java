@@ -82,7 +82,7 @@ public class SeamCarver {
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        int pathTo[][] = new int[height()][width()];
+        int edgeTo[][] = new int[height()][width()];
         double distTo[] = new double[width()];
         double prevDistTo[] = new double[width()];
 
@@ -97,7 +97,7 @@ public class SeamCarver {
                 int prev = choosePath(prevDistTo, j);
 
                 distTo[j] = prevDistTo[prev] + energies[i][j];
-                pathTo[i][j] = prev;
+                edgeTo[i][j] = prev;
             }
 
             // Swap 'em.
@@ -117,7 +117,7 @@ public class SeamCarver {
 
         // Now construct the rest of the path, starting from the row second from bottom.
         for (int i = height()-2; i >=0; i--) {
-            path[i] = pos = pathTo[i+1][pos];
+            path[i] = pos = edgeTo[i+1][pos];
         }
         
         return path;
