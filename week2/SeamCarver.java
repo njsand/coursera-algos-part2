@@ -8,7 +8,9 @@ public class SeamCarver {
 
     private final Picture picture;
 
-    private final double[][] energies;
+    private double[][] energies;
+
+    private boolean transposed;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
@@ -21,6 +23,8 @@ public class SeamCarver {
                 energies[i][j] = energy(j, i);
             }
         }
+
+        transposed = false;
     }
 
     // current picture
@@ -75,25 +79,42 @@ public class SeamCarver {
     
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        // TODO
+        if (!transposed) {
+            energies = transpose(energies);
+            transposed = true;
+        }
         
-        return new int[]{};
+        return runSearch();
+    }
+    
+    // sequence of indices for vertical seam
+    // 
+    // TODO: Correctly handle images of one or zero pixels in height or width.
+    public int[] findVerticalSeam() {
+        if (transposed) {
+            energies = transpose(energies);
+            transposed = false;
+        }
+
+        return runSearch();
     }
 
-    // sequence of indices for vertical seam
-    public int[] findVerticalSeam() {
-        int edgeTo[][] = new int[height()][width()];
-        double distTo[] = new double[width()];
-        double prevDistTo[] = new double[width()];
+    private int[] runSearch() {
+        int numRows = energies.length;
+        int numCols = energies[0].length;
+        
+        int edgeTo[][] = new int[numRows][numCols];
+        double distTo[] = new double[numCols];
+        double prevDistTo[] = new double[numCols];
 
         // Init prevDistTo to the first row's energies.
-        for (int i = 0; i < width(); i++)
+        for (int i = 0; i < numCols; i++)
             prevDistTo[i] = energies[0][i];
 
         // Starting from the second row, for each pixel, choose the above
         // (connected) pixel with the shortest path.
-        for (int i = 1; i < height(); i++) {
-            for (int j = 0; j < width(); j++) {
+        for (int i = 1; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
                 int prev = choosePath(prevDistTo, j);
 
                 distTo[j] = prevDistTo[prev] + energies[i][j];
@@ -111,12 +132,12 @@ public class SeamCarver {
         // overall path.)
         int pos = findMin(distTo);
 
-        int[] path = new int[height()];
+        int[] path = new int[numRows];
 
         path[path.length-1] = pos;
 
         // Now construct the rest of the path, starting from the row second from bottom.
-        for (int i = height()-2; i >=0; i--) {
+        for (int i = numRows-2; i >=0; i--) {
             path[i] = pos = edgeTo[i+1][pos];
         }
         
@@ -140,12 +161,25 @@ public class SeamCarver {
     private int choosePath(double[] prevDistTo, int j) {
         int left = j == 0 ? j : j-1;
         int middle = j;
-        int right = j == width()-1 ? j : j+1;
+        int right = j == prevDistTo.length-1 ? j : j+1;
 
         if (prevDistTo[left] < prevDistTo[middle])
             return prevDistTo[left] < prevDistTo[right] ? left : right;
         else
             return prevDistTo[middle] < prevDistTo[right] ? middle : right;
+    }
+
+    // Return a new array that is the tranpose of the argument.
+    private double[][] transpose(double[][] a) {
+        double[][] result = new double[a[0].length][a.length];
+        
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[i].length; j++) {
+                result[j][i] = a[i][j];
+            }
+        }
+
+        return result;
     }
     
     // remove horizontal seam from current picture
