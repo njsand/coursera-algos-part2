@@ -115,7 +115,7 @@ public class SeamCarver {
         // (connected) pixel with the shortest path.
         for (int i = 1; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
-                int prev = choosePath(prevDistTo, j);
+                int prev = chooseMin(prevDistTo, j);
 
                 distTo[j] = prevDistTo[prev] + energies[i][j];
                 edgeTo[i][j] = prev;
@@ -158,15 +158,18 @@ public class SeamCarver {
         return minPos;
     }
 
-    private int choosePath(double[] prevDistTo, int j) {
+    // Return the index of the smallest element of the provided array, out of
+    // three elements: The a[j-1] (if it exists), a[j] itself, and a[j+1] (if it
+    // exists).
+    private int chooseMin(double[] a, int j) {
         int left = j == 0 ? j : j-1;
         int middle = j;
-        int right = j == prevDistTo.length-1 ? j : j+1;
+        int right = j == a.length-1 ? j : j+1;
 
-        if (prevDistTo[left] < prevDistTo[middle])
-            return prevDistTo[left] < prevDistTo[right] ? left : right;
+        if (a[left] < a[middle])
+            return a[left] < a[right] ? left : right;
         else
-            return prevDistTo[middle] < prevDistTo[right] ? middle : right;
+            return a[middle] < a[right] ? middle : right;
     }
 
     // Return a new array that is the tranpose of the argument.
