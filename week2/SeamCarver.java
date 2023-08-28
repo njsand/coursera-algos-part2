@@ -9,6 +9,7 @@ public class SeamCarver {
     private final Picture picture;
 
     private double[][] energies;
+    private boolean energiesDirty;
 
     private boolean transposed;
 
@@ -41,6 +42,8 @@ public class SeamCarver {
     public int height() {
         return picture.height();
     }
+
+    
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
@@ -76,7 +79,11 @@ public class SeamCarver {
 
         return false;
     }
-    
+
+    private double[][] energies(boolean transposed) {
+        return null;
+    }
+
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
         if (!transposed) {
