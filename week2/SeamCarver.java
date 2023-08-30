@@ -8,24 +8,11 @@ public class SeamCarver {
 
     private final Picture picture;
 
-    private double[][] energies;
     private boolean energiesDirty;
-
-    private boolean transposed;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
         this.picture = picture;
-
-        energies = new double[height()][width()];
-        
-        for (int i = 0; i < height(); i++) {
-            for (int j = 0; j < width(); j++) {
-                energies[i][j] = energy(j, i);
-            }
-        }
-
-        transposed = false;
     }
 
     // current picture
@@ -42,8 +29,6 @@ public class SeamCarver {
     public int height() {
         return picture.height();
     }
-
-    
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
@@ -80,33 +65,40 @@ public class SeamCarver {
         return false;
     }
 
-    private double[][] energies(boolean transposed) {
-        return null;
-    }
-
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        if (!transposed) {
-            energies = transpose(energies);
-            transposed = true;
-        }
+        double [][]energies = energies(false);
+
+        energies = transpose(energies);
         
-        return runSearch();
+        return runSearch(energies);
     }
     
     // sequence of indices for vertical seam
     // 
     // TODO: Correctly handle images of one or zero pixels in height or width.
     public int[] findVerticalSeam() {
-        if (transposed) {
-            energies = transpose(energies);
-            transposed = false;
-        }
+        double [][]energies = energies(true);
 
-        return runSearch();
+        return runSearch(energies);
     }
 
-    private int[] runSearch() {
+    private double[][] energies(boolean vertical) {
+        int height = height();
+        int width = width();
+        
+        double [][]energies = new double[height][width];
+        
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                energies[i][j] = energy(j, i);
+            }
+        }
+
+        return energies;
+    }
+
+    private int[] runSearch(double [][]energies) {
         int numRows = energies.length;
         int numCols = energies[0].length;
         
