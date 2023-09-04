@@ -12,12 +12,12 @@ public class SeamCarver {
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
-        this.picture = picture;
+        this.picture = new Picture(picture);
     }
 
     // current picture
     public Picture picture() {
-        return picture;
+        return new Picture(picture);
     }
 
     // width of current picture
@@ -192,7 +192,7 @@ public class SeamCarver {
     
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-        seamCheck(seam);
+        seamCheck(seam, width());
         
         int newWidth = picture.width();
         int newHeight = picture.height()-1;
@@ -213,15 +213,9 @@ public class SeamCarver {
         picture = p;
     }
 
-    private void seamCheck(int[] seam) {
-        for (int i = 1; i < seam.length; i++)
-            if (Math.abs(seam[i] - seam[i-1]) > 1)
-                throw new IllegalArgumentException("Illegal seam!");
-    }
-
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
-        seamCheck(seam);
+        seamCheck(seam, height());
         
         int newWidth = picture.width()-1;
         int newHeight = picture.height();
@@ -240,6 +234,18 @@ public class SeamCarver {
         }
 
         picture = p;
+    }
+
+    private void seamCheck(int[] seam, int expectedLength) {
+        if (seam == null)
+            throw new IllegalArgumentException("Seam must be non-null.");
+
+        if (seam.length != expectedLength)
+            throw new IllegalArgumentException("Seam not expected length.");
+        
+        for (int i = 1; i < seam.length; i++)
+            if (Math.abs(seam[i] - seam[i-1]) > 1)
+                throw new IllegalArgumentException("Illegal seam!");
     }
 
     //  unit testing (optional)
