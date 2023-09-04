@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.Picture;
 
 public class SeamCarver {
 
-    private final Picture picture;
+    private Picture picture;
 
     private boolean energiesDirty;
 
@@ -67,7 +67,7 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        double [][]energies = energies(false);
+        double energies[][] = energies(false);
 
         energies = transpose(energies);
         
@@ -78,7 +78,7 @@ public class SeamCarver {
     // 
     // TODO: Correctly handle images of one or zero pixels in height or width.
     public int[] findVerticalSeam() {
-        double [][]energies = energies(true);
+        double energies[][] = energies(true);
 
         return runSearch(energies);
     }
@@ -87,7 +87,7 @@ public class SeamCarver {
         int height = height();
         int width = width();
         
-        double [][]energies = new double[height][width];
+        double energies[][] = new double[height][width];
         
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -144,7 +144,7 @@ public class SeamCarver {
     }
 
     // Return the index of the smallest value in a.
-    private int findMin(double []a) {
+    private int findMin(double a[]) {
         double min = a[0];
         int minPos = 0;
         
@@ -160,7 +160,7 @@ public class SeamCarver {
     // Return the index of the smallest element of the provided array, out of
     // three elements: The a[j-1] (if it exists), a[j] itself, and a[j+1] (if it
     // exists).
-    private int chooseMin(double[] a, int j) {
+    private int chooseMin(double a[], int j) {
         int left = j == 0 ? j : j-1;
         int middle = j;
         int right = j == a.length-1 ? j : j+1;
@@ -186,12 +186,44 @@ public class SeamCarver {
     
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-        
+        int newWidth = picture.width();
+        int newHeight = picture.height()-1;
+
+        Picture p = new Picture(newWidth, newHeight);
+
+        for (int col = 0; col < picture.width(); col++) {
+            int fillRow = 0;
+
+            for (int row = 0; row < picture.height(); row++) {
+                if (row != seam[col]) {
+                    p.setRGB(col, fillRow, picture.getRGB(col, row));
+                    ++fillRow;
+                }
+            }
+        }
+
+        picture = p;
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
-        
+        int newWidth = picture.width()-1;
+        int newHeight = picture.height();
+
+        Picture p = new Picture(newWidth, newHeight);
+
+        for (int row = 0; row < picture.height(); row++) {
+            int fillCol = 0;
+
+            for (int col = 0; col < picture.width(); col++) {
+                if (col != seam[row]) {
+                    p.setRGB(fillCol, row, picture.getRGB(col, row));
+                    ++fillCol;
+                }
+            }
+        }
+
+        picture = p;
     }
 
     //  unit testing (optional)

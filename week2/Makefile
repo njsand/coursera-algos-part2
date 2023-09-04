@@ -1,6 +1,6 @@
 SOURCES=SeamCarver.java
 
-ZIP_SOURCES=SeamCarver
+ZIP_SOURCES=SeamCarver.java
 
 ZIPFILE=seam.zip
 
