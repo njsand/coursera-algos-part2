@@ -58,6 +58,12 @@ public class SeamCarver {
     }
 
     private boolean isEdge(int col, int row) {
+        if (col < 0 || col >= width())
+            throw new IllegalArgumentException("Column value out of bounds.");
+
+        if (row < 0 || row >= height())
+            throw new IllegalArgumentException("Row value of out bounds.");
+        
         if (col == 0 || col == width()-1 ||
             row == 0 || row == height()-1)
             return true;
@@ -67,7 +73,7 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        double energies[][] = energies(false);
+        double[][] energies = energies(false);
 
         energies = transpose(energies);
         
@@ -78,7 +84,7 @@ public class SeamCarver {
     // 
     // TODO: Correctly handle images of one or zero pixels in height or width.
     public int[] findVerticalSeam() {
-        double energies[][] = energies(true);
+        double[][] energies = energies(true);
 
         return runSearch(energies);
     }
@@ -87,7 +93,7 @@ public class SeamCarver {
         int height = height();
         int width = width();
         
-        double energies[][] = new double[height][width];
+        double[][] energies = new double[height][width];
         
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -102,9 +108,9 @@ public class SeamCarver {
         int numRows = energies.length;
         int numCols = energies[0].length;
         
-        int edgeTo[][] = new int[numRows][numCols];
-        double distTo[] = new double[numCols];
-        double prevDistTo[] = new double[numCols];
+        int[][] edgeTo = new int[numRows][numCols];
+        double[] distTo = new double[numCols];
+        double[] prevDistTo = new double[numCols];
 
         // Init prevDistTo to the first row's energies.
         for (int i = 0; i < numCols; i++)
@@ -186,6 +192,8 @@ public class SeamCarver {
     
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
+        seamCheck(seam);
+        
         int newWidth = picture.width();
         int newHeight = picture.height()-1;
 
@@ -205,8 +213,16 @@ public class SeamCarver {
         picture = p;
     }
 
+    private void seamCheck(int[] seam) {
+        for (int i = 1; i < seam.length; i++)
+            if (Math.abs(seam[i] - seam[i-1]) > 1)
+                throw new IllegalArgumentException("Illegal seam!");
+    }
+
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
+        seamCheck(seam);
+        
         int newWidth = picture.width()-1;
         int newHeight = picture.height();
 
