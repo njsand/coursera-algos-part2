@@ -76,7 +76,7 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        double[][] energies = energies(false);
+        double[][] energies = energies();
 
         energies = transpose(energies);
         
@@ -87,12 +87,12 @@ public class SeamCarver {
     // 
     // TODO: Correctly handle images of one or zero pixels in height or width.
     public int[] findVerticalSeam() {
-        double[][] energies = energies(true);
+        double[][] energies = energies();
 
         return runSearch(energies);
     }
 
-    private double[][] energies(boolean vertical) {
+    private double[][] energies() {
         int height = height();
         int width = width();
         
@@ -140,16 +140,16 @@ public class SeamCarver {
         // overall path.)
         int pos = findMin(distTo);
 
-        int[] path = new int[numRows];
+        int[] seam = new int[numRows];
 
-        path[path.length-1] = pos;
+        seam[seam.length-1] = pos;
 
-        // Now construct the rest of the path, starting from the row second from bottom.
+        // Now construct the rest of the seam, starting from the row second from bottom.
         for (int i = numRows-2; i >=0; i--) {
-            path[i] = pos = edgeTo[i+1][pos];
+            seam[i] = pos = edgeTo[i+1][pos];
         }
         
-        return path;
+        return seam;
     }
 
     // Return the index of the smallest value in a.
@@ -167,7 +167,7 @@ public class SeamCarver {
     }
 
     // Return the index of the smallest element of the provided array, out of
-    // three elements: The a[j-1] (if it exists), a[j] itself, and a[j+1] (if it
+    // three elements: a[j-1] (if it exists), a[j] itself, and a[j+1] (if it
     // exists).
     private int chooseMin(double a[], int j) {
         int left = j == 0 ? j : j-1;
@@ -239,13 +239,16 @@ public class SeamCarver {
         picture = p;
     }
 
+    // Validate a seam.  Throw IllegalArgumentException if it's invalid.
     private void seamCheck(int[] seam, int expectedLength) {
         if (seam == null)
             throw new IllegalArgumentException("Seam must be non-null.");
 
         if (seam.length != expectedLength)
             throw new IllegalArgumentException("Seam not expected length.");
-        
+
+        // Check each row (or column) in the seam is maximum one pixel different
+        // to the previous pixel.
         for (int i = 1; i < seam.length; i++)
             if (Math.abs(seam[i] - seam[i-1]) > 1)
                 throw new IllegalArgumentException("Illegal seam!");
